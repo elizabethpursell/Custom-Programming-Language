@@ -1,0 +1,67 @@
+Note: This grammar is based on my submission for homework-4 and notes from class-28
+
+Notation:
+,     Concat
+|     Alternative
+{}    1 or more
+<>    0 or more
+[]    Optional
+()    Grouping
+??    Special Form
+
+Foundational Grammar:
+program                    = {function_definition | statement | expression} ;
+function_definition         = "fn" , identifier , "(" , [arguments] , ")" , "{" , {statement} , "}" ;
+arguments                   = expression , {other_arg} ;
+other_arg                   = "," , expression ;
+statement                   = var_statement | return_statement ;
+return_statement            = function_return , ";" ;
+var_statement               = variable_define , ";" ;
+variable_define             = "let" , identifier , "=" , expression ;
+function_return             = "return" , (function_call | expression | identifier) ;
+function_call               = identifier , "(" , <arguments> , ")" ;
+expression                  = if_expression | boolean | math_expression | function_call | number | string | identifier ;
+math_expression             = l1 ;
+l1                          = l2, <l1_infix> ;
+l1_infix                    = ("+" | "-"), l2 ;
+l2                          = l3, <l2_infix> ;
+l2_infix                    = ("*" | "/"), l2 ;
+l3                          = l4, <l3_infix> ;
+l3_infix                    = "^", l4 ;
+l4                          = function_call | number | identifier | parenthetical_expression ;
+parenthetical_expression    = "(", l1, ")" ;
+value                       = number | identifier | boolean ;
+number                      = {digit} ;
+boolean                     = "true" | "false" ;
+string                      = "\"" , {alnum | " "} , "\"" ;
+identifier                  = alpha , {alnum} ;
+alpha                       = ?alphabetic or equivalent character?;
+alnum                       = ?alphanumeric character?;
+digit                       = 0..9;
+whitespace                  = space | tab | newline | carriage_return; 
+
+If Expressions Grammar:
+if_expression = if_clause, <else_if_clause>, [else_clause] ;
+if_clause = "if", boolean, "{", <var_statement>, return_statement, "}" ;
+else_if_clause = "else if", boolean, "{", <var_statement>, return_statement, "}" ;
+else_clause = "else", "{", <var_statement>, return_statement, "}" ;
+
+Valid Examples:
+if true {let z = 0; return z * 2;} else if false {let x = 1; let y = x + 1; return y;}
+let x = if false {
+    return 4;
+} else if true {
+    let a = 5;
+    let b = a ^ 2;
+    return b;
+};
+if false { return "invalid"; } else { return "valid"; }
+
+Invalid Examples:
+if true {let z = 0; return z * 2;} else if false {return "valid";}      // semantics error
+let x = if false {return 4;} else {return false;} else if true {let a = 5; let b = a ^ 2;};     // syntax error
+if false {return "invalid";} else {let x = 1; let y = x + 1; return y;}     // semantics error
+
+Note: Type consistency is verified by interpreter
+
+Note: The grammar as written doesn't handle whitespace, although the examples include it. You should handle it accordingly.
